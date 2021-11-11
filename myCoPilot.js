@@ -64,8 +64,18 @@ app.get('/list', (req, res) => {
       res.send(docs)
     })
   }
-  
-  
+})
+
+app.get('/list/:hl', (req, res) => {
+  const regex = new RegExp(req.params.hl, 'i')
+  const docs = Ticket.find({ticketHL: regex}).lean().exec()
+  docs.then((docs) => {
+    if(docs.length === 0) {
+      res.send({message: 'no data found'})
+    } else if(docs) {
+      res.send(docs)
+    }
+  })
 })
 
 app.put('/list', cors(corsOptions), (req, res) => {
@@ -92,7 +102,6 @@ app.put('/list', cors(corsOptions), (req, res) => {
       res.send(doc)
     }
   })
-  
 })
 
 // input new ticket
@@ -128,11 +137,7 @@ app.post('/addlist', (req, res) => {
       })      
     }
   })
-  
 })
-
-
-
 
 app.listen(port)
 
