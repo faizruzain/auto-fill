@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
 
 app.get('/list', (req, res) => {
   if(req.query.id) {
-    // get a doc
+    // get a doc by ticketId or remedy
     const query = req.query.id
     const doc = Ticket.findOne({$or: [{ticketId: query}, {remedy: query}]}).lean().exec()
     doc.then((doc) => {
@@ -57,7 +57,20 @@ app.get('/list', (req, res) => {
       }
       
     })
-  } else {
+  } else if(req.query.regtsel) {
+    // filter docs by regtsel[num]
+    const query = req.query.regtsel
+    const regex = new RegExp(`regtsel${query}(?![0-1])`, 'i')
+    const docs = Ticket.find({ticketHL: regex}).lean().exec()
+    docs.then((docs) => {
+      if(docs.length === 0) {
+        res.send({message: 'no data found'})
+      } else if(docs) {
+        res.send(docs)
+      }
+    })
+  } 
+  else {
     // get all docs
     const docs = Ticket.find({}).lean().exec()
     docs.then((docs) => {
@@ -71,6 +84,7 @@ app.get('/list/:hl', (req, res) => {
   const regex = new RegExp(req.params.hl, 'i')
   const regexAndQuery = new RegExp(`(?=.*${req.params.hl})(?=.*regtsel${query}(?![0-1]))`, 'i')
   if(!query) {
+    // if no query which is regtsel[num]
     const docs = Ticket.find({ticketHL: regex}).lean().exec()
     docs.then((docs) => {
       if(docs.length === 0) {
@@ -80,6 +94,7 @@ app.get('/list/:hl', (req, res) => {
       }
     })
   } else if(query) {
+    // with query and params
     const docs = Ticket.find({ticketHL: regexAndQuery}).lean().exec()
     docs.then((docs) => {
       if(docs.length === 0) {
@@ -92,6 +107,7 @@ app.get('/list/:hl', (req, res) => {
 })
 
 app.put('/list', cors(corsOptions), (req, res) => {
+  // idk XD
   console.log(req.body)
   console.log(req.body.siteId)
   const siteId =  req.body.siteId.match(/[A-z]{3}\d{3}/)
@@ -119,7 +135,7 @@ app.put('/list', cors(corsOptions), (req, res) => {
 
 // input new ticket
 app.post('/addlist', (req, res) => {
-  console.log(req.body)
+  // adds new ticket
   Ticket.findOne({ticketId: req.body.ticketId}).exec((err, doc) => {
     if(err) {
       res.send(err)
