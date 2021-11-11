@@ -67,15 +67,28 @@ app.get('/list', (req, res) => {
 })
 
 app.get('/list/:hl', (req, res) => {
+  const query = req.query.regtsel
   const regex = new RegExp(req.params.hl, 'i')
-  const docs = Ticket.find({ticketHL: regex}).lean().exec()
-  docs.then((docs) => {
-    if(docs.length === 0) {
-      res.send({message: 'no data found'})
-    } else if(docs) {
-      res.send(docs)
-    }
-  })
+  const regexAndQuery = new RegExp(`(?=.*${req.params.hl})(?=.*regtsel${query}(?![0-1]))`, 'i')
+  if(!query) {
+    const docs = Ticket.find({ticketHL: regex}).lean().exec()
+    docs.then((docs) => {
+      if(docs.length === 0) {
+        res.send({message: 'no data found'})
+      } else if(docs) {
+        res.send(docs)
+      }
+    })
+  } else if(query) {
+    const docs = Ticket.find({ticketHL: regexAndQuery}).lean().exec()
+    docs.then((docs) => {
+      if(docs.length === 0) {
+        res.send({message: 'no data found'})
+      } else if(docs) {
+        res.send(docs)
+      }
+    })
+  } 
 })
 
 app.put('/list', cors(corsOptions), (req, res) => {
