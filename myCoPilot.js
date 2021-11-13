@@ -69,7 +69,24 @@ app.get('/list', (req, res) => {
         res.send(docs)
       }
     })
-  } 
+  } else if(req.query.date) {
+    // filter docs by date
+    const dateRegex = new RegExp(req.query.date, 'i')
+    const datePatt = /\d{2}-\d{2}-\d{4}/
+    const validDate = datePatt.test(req.query.date)
+    if(!validDate) {
+      res.send({message: 'invalid date'})
+    } else if(validDate) {
+      const docs = Ticket.find({dateOpen: dateRegex}).lean().exec()
+      docs.then((docs) => {
+        if(docs.length === 0) {
+          res.send({message: 'no data found'})
+        } else {
+          res.send(docs)
+        }
+      })
+    }
+  }
   else {
     // get all docs
     const docs = Ticket.find({}).lean().exec()
@@ -80,12 +97,13 @@ app.get('/list', (req, res) => {
 })
 
 app.get('/list/:hl', (req, res) => {
-  const query = req.query.regtsel
-  const regex = new RegExp(req.params.hl, 'i')
-  const regexAndQuery = new RegExp(`(?=.*${req.params.hl})(?=.*regtsel${query}(?![0-1]))`, 'i')
-  if(!query) {
+  const regtsel = req.query.regtsel
+  const date = req.query.date
+  const typeRegex = new RegExp(req.params.hl, 'i')
+  const typeAndRegtselRegex = new RegExp(`(?=.*${req.params.hl})(?=.*regtsel${regtsel}(?![0-1]))`, 'i')
+  if(!regtsel && !date) {
     // if no query which is regtsel[num]
-    const docs = Ticket.find({ticketHL: regex}).lean().exec()
+    const docs = Ticket.find({ticketHL: typeRegex}).lean().exec()
     docs.then((docs) => {
       if(docs.length === 0) {
         res.send({message: 'no data found'})
@@ -93,9 +111,9 @@ app.get('/list/:hl', (req, res) => {
         res.send(docs)
       }
     })
-  } else if(query) {
+  } else if(regtsel) {
     // with query and params
-    const docs = Ticket.find({ticketHL: regexAndQuery}).lean().exec()
+    const docs = Ticket.find({ticketHL: typeAndRegtselRegex}).lean().exec()
     docs.then((docs) => {
       if(docs.length === 0) {
         res.send({message: 'no data found'})
@@ -103,7 +121,24 @@ app.get('/list/:hl', (req, res) => {
         res.send(docs)
       }
     })
-  } 
+  } else if(date) {
+    // filter docs by type and date open
+    const dateRegex = new RegExp(req.query.date, 'i')
+    const datePatt = /\d{2}-\d{2}-\d{4}/
+    const validDate = datePatt.test(date)
+    if(!validDate) {
+      res.send({message: 'invalid date'})
+    } else if(validDate) {
+      const docs = Ticket.find({$and: [{ticketHL: typeRegex}, {dateOpen: dateRegex}]}).lean().exec()
+      docs.then((docs) => {
+        if(docs.length === 0) {
+          res.send({message: 'no data found'})
+        } else {
+          res.send(docs)
+        }
+      })
+    }
+  }
 })
 
 app.put('/list', cors(corsOptions), (req, res) => {
