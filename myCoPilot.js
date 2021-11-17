@@ -143,7 +143,6 @@ app.get('/list/:hl', (req, res) => {
 
 app.put('/list', cors(corsOptions), (req, res) => {
   // idk XD
-  console.log(req.body)
   const filter = {
     ticketId: req.body.ticketId
   }
@@ -155,8 +154,8 @@ app.put('/list', cors(corsOptions), (req, res) => {
   const doc = Ticket.findOneAndUpdate(filter, update, {
     new: true
   }).lean().exec()
-  doc.then((doc) => {
-    console.log(doc)
+  doc.then(() => {
+    res.send({message: 'updated '+req.body.ticketId})
   })
   
 })
