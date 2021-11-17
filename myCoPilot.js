@@ -16,7 +16,7 @@ app.use(express.urlencoded({
 }))
 
 const corsOptions = {
-  origin: 'http://localhost:3000/addlist',
+  origin: 'https://afr-auto-fill.herokuapp.com/list',
   methods: 'PUT',
   allowedHeaders: {
     'Content-Type': 'application/json'
@@ -30,8 +30,8 @@ const Ticket =  require('./schemas/ticket.js')
 // my schemas
 
 const mongoose = require('mongoose')
-// const db = 'mongodb://localhost:27017/nossa'
-const db = process.env.DB
+const db = 'mongodb://localhost:27017/nossa'
+// const db = process.env.DB
 main().catch(err => console.log(err))
 
 async function main() {
@@ -144,28 +144,21 @@ app.get('/list/:hl', (req, res) => {
 app.put('/list', cors(corsOptions), (req, res) => {
   // idk XD
   console.log(req.body)
-  console.log(req.body.siteId)
-  const siteId =  req.body.siteId.match(/[A-z]{3}\d{3}/)
-  console.log(siteId)
-  const datek = req.body.datek
-  console.log(datek)
-  Ticket.findOneAndUpdate(
-    {
-      ticketHL: {$regex: siteId}
-    },
-    {
-      $set: {datek: datek}
-    },
-    {
-      rawResult: true
-    }).lean().exec((err, doc) => {
-      if(err) {
-       res.send(err)
-    } else {
-      console.log(doc)
-      res.send(doc)
-    }
+  const filter = {
+    ticketId: req.body.ticketId
+  }
+  const update = {
+    actualSolution: req.body.actualSolution,
+    incidentDomain: req.body.incidentDomain,
+    RFO_details: req.body.RFO_details
+  }
+  const doc = Ticket.findOneAndUpdate(filter, update, {
+    new: true
+  }).lean().exec()
+  doc.then((doc) => {
+    console.log(doc)
   })
+  
 })
 
 // input new ticket
