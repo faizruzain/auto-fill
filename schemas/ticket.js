@@ -36,7 +36,10 @@ const ticketSchema = new mongoose.Schema({
   },
   datek: {
     type: [String]
-  }
+  },
+  actualSolution: String,
+  incidentDomain: String,
+  RFO_details: String
 }, {
   collection: 'tickets'
 })
