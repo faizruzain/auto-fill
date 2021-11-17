@@ -30,8 +30,8 @@ const Ticket =  require('./schemas/ticket.js')
 // my schemas
 
 const mongoose = require('mongoose')
-const db = 'mongodb://localhost:27017/nossa'
-// const db = process.env.DB
+// const db = 'mongodb://localhost:27017/nossa'
+const db = process.env.DB
 main().catch(err => console.log(err))
 
 async function main() {
