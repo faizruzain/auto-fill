@@ -39,7 +39,8 @@ const ticketSchema = new mongoose.Schema({
   },
   actualSolution: String,
   incidentDomain: String,
-  RFO_details: String
+  RFO_details: String,
+  dateClosed: String
 }, {
   collection: 'tickets'
 })
