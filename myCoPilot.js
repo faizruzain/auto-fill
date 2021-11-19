@@ -17,6 +17,7 @@ app.use(express.urlencoded({
 
 const corsOptions = {
   origin: 'https://afr-auto-fill.herokuapp.com/list',
+  // origin: 'http://localhost:3000/list',
   methods: 'PUT',
   allowedHeaders: {
     'Content-Type': 'application/json'
@@ -142,22 +143,24 @@ app.get('/list/:hl', (req, res) => {
 })
 
 app.put('/list', cors(corsOptions), (req, res) => {
-  // idk XD
   const filter = {
     ticketId: req.body.ticketId
   }
   const update = {
     actualSolution: req.body.actualSolution,
     incidentDomain: req.body.incidentDomain,
-    RFO_details: req.body.RFO_details
+    RFO_details: req.body.RFO_details,
+    dateClosed: req.body.dateClosed
   }
   const doc = Ticket.findOneAndUpdate(filter, update, {
-    new: true
+    new: true,
+    upsert: true
   }).lean().exec()
-  doc.then(() => {
-    res.send({message: 'updated '+req.body.ticketId})
-  })
-  
+  doc.then((doc) => {
+    if(doc) {
+      res.send(doc)
+    }   
+  })  
 })
 
 // input new ticket
@@ -167,8 +170,6 @@ app.post('/addlist', (req, res) => {
     if(err) {
       res.send(err)
     } else if(doc) {
-      console.log(doc)
-      console.log('data exist');
       res.send({message: 'data exist'})
     } else {
       const data = new Ticket({
@@ -182,12 +183,9 @@ app.post('/addlist', (req, res) => {
       data.set('validateBeforeSave', false)
       data.validate((err) => {
         if(err) {
-          console.log(err.errors)
           res.send(err.errors)       
         } else {
           data.save()
-          console.log(data)
-          console.log('saved')
           res.send({message: 'success'})
         }      
       })      
