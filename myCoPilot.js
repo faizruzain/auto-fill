@@ -170,8 +170,31 @@ app.post('/addlist', (req, res) => {
     if(err) {
       res.send(err)
     } else if(doc) {
-      res.send({message: 'data exist'})
+      // if there is a match, replace entire doc with new doc
+      const filter = {
+        ticketId: req.body.ticketId
+      }
+      const doc = {
+        ticketId: req.body.ticketId,
+        ticketHL: req.body.ticketHL,
+        dateOpen: req.body.dateOpen,
+        remedy: req.body.remedy,
+        impact: req.body.impact,
+        datek: req.body.datek
+      }
+      const options = {
+        returnDocument: 'after',
+        lean: true
+      }
+      Ticket.findOneAndReplace(filter, doc, options, (error, doc) => {
+        if(error) {
+          res.send(err)
+        } else {
+          res.send({message: `updated this ${doc.ticketId}`})
+        }
+      })
     } else {
+      // if there is no match, create one
       const data = new Ticket({
         ticketId: req.body.ticketId,
         ticketHL: req.body.ticketHL,
