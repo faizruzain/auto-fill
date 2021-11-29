@@ -50,6 +50,7 @@ app.get('/list', (req, res) => {
     // get a doc by ticketId or remedy
     const query = req.query.id
     const doc = Ticket.findOne({$or: [{ticketId: query}, {remedy: query}]}).lean().exec()
+
     doc.then((doc) => {
       if(!doc) {
         res.send({message: 'no data found'})
@@ -63,6 +64,7 @@ app.get('/list', (req, res) => {
     const query = req.query.regtsel
     const regex = new RegExp(`regtsel${query}(?![0-1])`, 'i')
     const docs = Ticket.find({ticketHL: regex}).lean().exec()
+
     docs.then((docs) => {
       if(docs.length === 0) {
         res.send({message: 'no data found'})
@@ -75,10 +77,12 @@ app.get('/list', (req, res) => {
     const dateRegex = new RegExp(req.query.date, 'i')
     const datePatt = /\d{2}-\d{2}-\d{4}/
     const validDate = datePatt.test(req.query.date)
+
     if(!validDate) {
       res.send({message: 'invalid date'})
     } else if(validDate) {
       const docs = Ticket.find({dateOpen: dateRegex}).lean().exec()
+
       docs.then((docs) => {
         if(docs.length === 0) {
           res.send({message: 'no data found'})
@@ -91,6 +95,7 @@ app.get('/list', (req, res) => {
   else {
     // get all docs
     const docs = Ticket.find({}).lean().exec()
+
     docs.then((docs) => {
       res.send(docs)
     })
@@ -102,9 +107,11 @@ app.get('/list/:hl', (req, res) => {
   const date = req.query.date
   const typeRegex = new RegExp(req.params.hl, 'i')
   const typeAndRegtselRegex = new RegExp(`(?=.*${req.params.hl})(?=.*regtsel${regtsel}(?![0-1]))`, 'i')
+
   if(!regtsel && !date) {
     // if no query which is regtsel[num]
     const docs = Ticket.find({ticketHL: typeRegex}).lean().exec()
+
     docs.then((docs) => {
       if(docs.length === 0) {
         res.send({message: 'no data found'})
@@ -115,6 +122,7 @@ app.get('/list/:hl', (req, res) => {
   } else if(regtsel) {
     // with query and params
     const docs = Ticket.find({ticketHL: typeAndRegtselRegex}).lean().exec()
+
     docs.then((docs) => {
       if(docs.length === 0) {
         res.send({message: 'no data found'})
@@ -127,10 +135,12 @@ app.get('/list/:hl', (req, res) => {
     const dateRegex = new RegExp(req.query.date, 'i')
     const datePatt = /\d{2}-\d{2}-\d{4}/
     const validDate = datePatt.test(date)
+
     if(!validDate) {
       res.send({message: 'invalid date'})
     } else if(validDate) {
       const docs = Ticket.find({$and: [{ticketHL: typeRegex}, {dateOpen: dateRegex}]}).lean().exec()
+
       docs.then((docs) => {
         if(docs.length === 0) {
           res.send({message: 'no data found'})
@@ -146,16 +156,19 @@ app.put('/list', cors(corsOptions), (req, res) => {
   const filter = {
     ticketId: req.body.ticketId
   }
+
   const update = {
     actualSolution: req.body.actualSolution,
     incidentDomain: req.body.incidentDomain,
     RFO_details: req.body.RFO_details,
     dateClosed: req.body.dateClosed
   }
+
   const doc = Ticket.findOneAndUpdate(filter, update, {
     new: true,
     upsert: true
   }).lean().exec()
+
   doc.then((doc) => {
     if(doc) {
       res.send(doc)
@@ -166,15 +179,17 @@ app.put('/list', cors(corsOptions), (req, res) => {
 // input new ticket
 app.post('/addlist', (req, res) => {
   // adds new ticket
-  Ticket.findOne({ticketId: req.body.ticketId}).exec((err, doc) => {
+  console.log(req.body)
+  Ticket.findOne({ticketId: req.body.ticketId}, {lean: true}).exec((err, doc) => {
     if(err) {
       res.send(err)
     } else if(doc) {
-      // if there is a match, replace entire doc with new doc
+      // if there is a match, update doc with new update
       const filter = {
         ticketId: req.body.ticketId
       }
-      const doc = {
+
+      const update = {
         ticketId: req.body.ticketId,
         ticketHL: req.body.ticketHL,
         dateOpen: req.body.dateOpen,
@@ -182,11 +197,13 @@ app.post('/addlist', (req, res) => {
         impact: req.body.impact,
         datek: req.body.datek
       }
+
       const options = {
         returnDocument: 'after',
         lean: true
       }
-      Ticket.findOneAndReplace(filter, doc, options, (error, doc) => {
+
+      Ticket.findOneAndUpdate(filter, update, options, (error, doc) => {
         if(error) {
           res.send(err)
         } else {
@@ -203,7 +220,9 @@ app.post('/addlist', (req, res) => {
         impact: req.body.impact,
         datek: req.body.datek
       })
+
       data.set('validateBeforeSave', false)
+
       data.validate((err) => {
         if(err) {
           res.send(err.errors)       
