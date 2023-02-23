@@ -37,7 +37,7 @@ const mongoose = require("mongoose");
 // const { query } = require("express");
 mongoose.set("strictQuery", false);
 // const db = "mongodb://127.0.0.1:27017/test";
-const db = process.env.DB
+const db = process.env.DB;
 main().catch((err) => console.log(err));
 
 async function main() {
@@ -53,13 +53,18 @@ app.get("/", (req, res) => {
 // to do queries
 app.get("/list", async (req, res) => {
   const query = req.query.id;
-  const doc = await Ticket.findOne({ ticketId: query }).lean().exec();
 
-  if (!doc) {
-    res.send({ message: "no data found" });
+  if (query) {
+    const doc = await Ticket.findOne({ ticketId: query }).lean().exec();
+
+    if (!doc) {
+      res.send({ message: "no data found" });
+    } else {
+      res.send(doc);
+      await Ticket.findOneAndDelete({ ticketId: query });
+    }
   } else {
-    res.send(doc);
-    await Ticket.findOneAndDelete({ ticketId: query });
+    res.status(200).send({status: "working"})
   }
 });
 
@@ -161,7 +166,7 @@ app.post("/addlist", (req, res) => {
 });
 
 app.get("*", (req, res) => {
-  res.status(200).send("<h1>Path not found</h1>")
-})
+  res.status(200).send("<h1>Path not found</h1>");
+});
 
 app.listen(port);
