@@ -34,6 +34,7 @@ const Ticket = require("./schemas/ticket.js");
 // my schemas
 
 const mongoose = require("mongoose");
+// const { query } = require("express");
 mongoose.set("strictQuery", false);
 const db = "mongodb://127.0.0.1:27017/test";
 // const db = process.env.DB
@@ -49,8 +50,8 @@ app.get("/", (req, res) => {
   res.send({ message: `hello ${req.ip}` });
 });
 
+// to do queries
 app.get("/list", async (req, res) => {
-  console.log(req.query.id);
   const query = req.query.id;
   const doc = await Ticket.findOne({ ticketId: query }).lean().exec();
 
@@ -60,127 +61,14 @@ app.get("/list", async (req, res) => {
     res.send(doc);
     await Ticket.findOneAndDelete({ ticketId: query });
   }
-
-  // if (req.query.id) {
-  //   // get a doc by ticketId or remedy
-  //   const query = req.query.id;
-  //   const doc = Ticket.findOne({
-  //     $or: [{ ticketId: query }, { remedy: query }],
-  //   })
-  //     .lean()
-  //     .exec();
-
-  //   doc.then((doc) => {
-  //     if (!doc) {
-  //       res.send({ message: "no data found" });
-  //     } else {
-  //       res.send(doc);
-  //     }
-  //   });
-  // } else if (req.query.regtsel) {
-  //   // filter docs by regtsel[num]
-  //   const query = req.query.regtsel;
-  //   const regex = new RegExp(`regtsel${query}(?![0-1])`, "i");
-  //   const docs = Ticket.find({ ticketHL: regex }).lean().exec();
-
-  //   docs.then((docs) => {
-  //     if (docs.length === 0) {
-  //       res.send({ message: "no data found" });
-  //     } else if (docs) {
-  //       res.send(docs);
-  //     }
-  //   });
-  // } else if (req.query.date) {
-  //   // filter docs by date
-  //   const dateRegex = new RegExp(req.query.date, "i");
-  //   const datePatt = /\d{2}-\d{2}-\d{4}/;
-  //   const validDate = datePatt.test(req.query.date);
-
-  //   if (!validDate) {
-  //     res.send({ message: "invalid date" });
-  //   } else if (validDate) {
-  //     const docs = Ticket.find({ dateOpen: dateRegex }).lean().exec();
-
-  //     docs.then((docs) => {
-  //       if (docs.length === 0) {
-  //         res.send({ message: "no data found" });
-  //       } else {
-  //         res.send(docs);
-  //       }
-  //     });
-  //   }
-  // } else {
-  //   // get all docs
-  //   const docs = Ticket.find({}).lean().exec();
-
-  //   docs.then((docs) => {
-  //     res.send(docs);
-  //   });
-  // }
-});
-
-app.get("/list/:hl", (req, res) => {
-  const regtsel = req.query.regtsel;
-  const date = req.query.date;
-  const typeRegex = new RegExp(req.params.hl, "i");
-  const typeAndRegtselRegex = new RegExp(
-    `(?=.*${req.params.hl})(?=.*regtsel${regtsel}(?![0-1]))`,
-    "i"
-  );
-
-  if (!regtsel && !date) {
-    // if no query which is regtsel[num]
-    const docs = Ticket.find({ ticketHL: typeRegex }).lean().exec();
-
-    docs.then((docs) => {
-      if (docs.length === 0) {
-        res.send({ message: "no data found" });
-      } else if (docs) {
-        res.send(docs);
-      }
-    });
-  } else if (regtsel) {
-    // with query and params
-    const docs = Ticket.find({ ticketHL: typeAndRegtselRegex }).lean().exec();
-
-    docs.then((docs) => {
-      if (docs.length === 0) {
-        res.send({ message: "no data found" });
-      } else if (docs) {
-        res.send(docs);
-      }
-    });
-  } else if (date) {
-    // filter docs by type and date open
-    const dateRegex = new RegExp(req.query.date, "i");
-    const datePatt = /\d{2}-\d{2}-\d{4}/;
-    const validDate = datePatt.test(date);
-
-    if (!validDate) {
-      res.send({ message: "invalid date" });
-    } else if (validDate) {
-      const docs = Ticket.find({
-        $and: [{ ticketHL: typeRegex }, { dateOpen: dateRegex }],
-      })
-        .lean()
-        .exec();
-
-      docs.then((docs) => {
-        if (docs.length === 0) {
-          res.send({ message: "no data found" });
-        } else {
-          res.send(docs);
-        }
-      });
-    }
-  }
 });
 
 app.put("/list", cors(corsOptions), (req, res) => {
   const version = req.body.version;
+  const query = req.body.ticketId;
   if (version === NossaVersion) {
     const filter = {
-      ticketId: req.body.ticketId,
+      ticketId: query,
     };
 
     const update = {
@@ -271,5 +159,9 @@ app.post("/addlist", (req, res) => {
     res.status(403).send({ message: "need update!" });
   }
 });
+
+app.get("*", (req, res) => {
+  res.status(200).send("<h1>Path not found</h1>")
+})
 
 app.listen(port);
