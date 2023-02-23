@@ -35,8 +35,8 @@ const Ticket = require("./schemas/ticket.js");
 
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
-// const db = "mongodb://127.0.0.1:27017/test";
-const db = process.env.DB
+const db = "mongodb://127.0.0.1:27017/test";
+// const db = process.env.DB
 main().catch((err) => console.log(err));
 
 async function main() {
@@ -49,64 +49,74 @@ app.get("/", (req, res) => {
   res.send({ message: `hello ${req.ip}` });
 });
 
-app.get("/list", (req, res) => {
+app.get("/list", async (req, res) => {
   console.log(req.query.id);
-  if (req.query.id) {
-    // get a doc by ticketId or remedy
-    const query = req.query.id;
-    const doc = Ticket.findOne({
-      $or: [{ ticketId: query }, { remedy: query }],
-    })
-      .lean()
-      .exec();
+  const query = req.query.id;
+  const doc = await Ticket.findOne({ ticketId: query }).lean().exec();
 
-    doc.then((doc) => {
-      if (!doc) {
-        res.send({ message: "no data found" });
-      } else {
-        res.send(doc);
-      }
-    });
-  } else if (req.query.regtsel) {
-    // filter docs by regtsel[num]
-    const query = req.query.regtsel;
-    const regex = new RegExp(`regtsel${query}(?![0-1])`, "i");
-    const docs = Ticket.find({ ticketHL: regex }).lean().exec();
-
-    docs.then((docs) => {
-      if (docs.length === 0) {
-        res.send({ message: "no data found" });
-      } else if (docs) {
-        res.send(docs);
-      }
-    });
-  } else if (req.query.date) {
-    // filter docs by date
-    const dateRegex = new RegExp(req.query.date, "i");
-    const datePatt = /\d{2}-\d{2}-\d{4}/;
-    const validDate = datePatt.test(req.query.date);
-
-    if (!validDate) {
-      res.send({ message: "invalid date" });
-    } else if (validDate) {
-      const docs = Ticket.find({ dateOpen: dateRegex }).lean().exec();
-
-      docs.then((docs) => {
-        if (docs.length === 0) {
-          res.send({ message: "no data found" });
-        } else {
-          res.send(docs);
-        }
-      });
-    }
+  if (!doc) {
+    res.send({ message: "no data found" });
   } else {
-    // get all docs
-    const docs = Ticket.find({}).lean().exec();
-
-    docs.then((docs) => {
-      res.send(docs);
-    });
+    res.send(doc);
+    await Ticket.findOneAndDelete({ ticketId: query });
   }
+
+  // if (req.query.id) {
+  //   // get a doc by ticketId or remedy
+  //   const query = req.query.id;
+  //   const doc = Ticket.findOne({
+  //     $or: [{ ticketId: query }, { remedy: query }],
+  //   })
+  //     .lean()
+  //     .exec();
+
+  //   doc.then((doc) => {
+  //     if (!doc) {
+  //       res.send({ message: "no data found" });
+  //     } else {
+  //       res.send(doc);
+  //     }
+  //   });
+  // } else if (req.query.regtsel) {
+  //   // filter docs by regtsel[num]
+  //   const query = req.query.regtsel;
+  //   const regex = new RegExp(`regtsel${query}(?![0-1])`, "i");
+  //   const docs = Ticket.find({ ticketHL: regex }).lean().exec();
+
+  //   docs.then((docs) => {
+  //     if (docs.length === 0) {
+  //       res.send({ message: "no data found" });
+  //     } else if (docs) {
+  //       res.send(docs);
+  //     }
+  //   });
+  // } else if (req.query.date) {
+  //   // filter docs by date
+  //   const dateRegex = new RegExp(req.query.date, "i");
+  //   const datePatt = /\d{2}-\d{2}-\d{4}/;
+  //   const validDate = datePatt.test(req.query.date);
+
+  //   if (!validDate) {
+  //     res.send({ message: "invalid date" });
+  //   } else if (validDate) {
+  //     const docs = Ticket.find({ dateOpen: dateRegex }).lean().exec();
+
+  //     docs.then((docs) => {
+  //       if (docs.length === 0) {
+  //         res.send({ message: "no data found" });
+  //       } else {
+  //         res.send(docs);
+  //       }
+  //     });
+  //   }
+  // } else {
+  //   // get all docs
+  //   const docs = Ticket.find({}).lean().exec();
+
+  //   docs.then((docs) => {
+  //     res.send(docs);
+  //   });
+  // }
 });
 
 app.get("/list/:hl", (req, res) => {
