@@ -5,7 +5,6 @@ require("dotenv").config();
 // ======================================= dotenv for security =======================================
 
 const NossaVersion = "4.1";
-const OneDigitOrSatriaVersion = "3.7";
 
 // =================================== express server configuration ===================================
 const express = require("express");
@@ -36,8 +35,8 @@ const Ticket = require("./schemas/ticket.js");
 const mongoose = require("mongoose");
 // const { query } = require("express");
 mongoose.set("strictQuery", false);
-// const db = "mongodb://127.0.0.1:27017/test";
-const db = process.env.DB;
+const db = "mongodb://127.0.0.1:27017/test";
+// const db = process.env.DB;
 main().catch((err) => console.log(err));
 
 async function main() {
@@ -58,13 +57,13 @@ app.get("/list", async (req, res) => {
     const doc = await Ticket.findOne({ ticketId: query }).lean().exec();
 
     if (!doc) {
-      res.send({ message: "no data found" });
+      res.status(200).send({ message: "no data found" });
     } else {
-      res.send(doc);
-      await Ticket.findOneAndDelete({ ticketId: query });
+      await res.status(200).send(doc);
+      await Ticket.deleteMany({ ticketId: query });
     }
   } else {
-    res.status(200).send({status: "working"})
+    res.status(200).send({ status: "working" });
   }
 });
 
