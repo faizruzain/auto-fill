@@ -30,13 +30,14 @@ const corsOptions = {
 // ======================================== db configuration ========================================
 // my schemas
 const Ticket = require("./schemas/ticket.js");
+const Tracking = require("./schemas/tracking.js");
 // my schemas
 
 const mongoose = require("mongoose");
 // const { query } = require("express");
 mongoose.set("strictQuery", false);
-// const db = "mongodb://127.0.0.1:27017/test";
-const db = process.env.DB;
+const db = "mongodb://127.0.0.1:27017/autofill-local";
+// const db = process.env.DB;
 main().catch((err) => console.log(err));
 
 async function main() {
@@ -102,7 +103,19 @@ app.put("/list", cors(corsOptions), (req, res) => {
 // input new ticket
 app.post("/addlist", (req, res) => {
   // adds new ticket
+  console.log(req.body);
+  const service = req.body.ticketHL;
   const version = req.body.version;
+
+  const radioip = /radioip/i;
+  const metro = /metro/i;
+  const sld = /sld/i;
+  const radiolh = /radiolh/i;
+  const iptransit = /iptransit/i;
+  const backhaul = /BACKHAUL/i;
+  const idr = /idr/i;
+  const cnop = /cnop/i;
+
   if (version === NossaVersion) {
     Ticket.findOne({ ticketId: req.body.ticketId }, { lean: true }).exec(
       (err, doc) => {
@@ -156,6 +169,17 @@ app.post("/addlist", (req, res) => {
               res.send({ message: "success" });
             }
           });
+
+          // and then update the tracking baru sampe sini
+          switch (key) {
+            case value:
+              
+              break;
+          
+            default:
+              break;
+          }
+
         }
       }
     );
