@@ -35,8 +35,8 @@ const Ticket = require("./schemas/ticket.js");
 const mongoose = require("mongoose");
 // const { query } = require("express");
 mongoose.set("strictQuery", false);
-// const db = "mongodb://127.0.0.1:27017/test";
-const db = process.env.DB;
+const db = "mongodb://127.0.0.1:27017/test";
+// const db = process.env.DB;
 main().catch((err) => console.log(err));
 
 async function main() {
@@ -54,13 +54,17 @@ app.get("/list", async (req, res) => {
   const query = req.query.id;
 
   if (query) {
-    const doc = await Ticket.findOne({ ticketId: query }).lean().exec();
+    try {
+      const doc = await Ticket.findOne({ ticketId: query }).lean().exec();
 
-    if (!doc) {
-      res.status(200).send({ message: "no data found" });
-    } else {
-      await res.status(200).send(doc);
-      await Ticket.deleteMany({ ticketId: query });
+      if (!doc) {
+        res.status(200).send({ message: "no data found" });
+      } else {
+        res.status(200).send(doc);
+        await Ticket.deleteMany({ ticketId: query });
+      }
+    } catch (error) {
+      res.status(403).send(error);
     }
   } else {
     res.status(200).send({ status: "working" });
@@ -103,11 +107,12 @@ app.put("/list", cors(corsOptions), (req, res) => {
 app.post("/addlist", (req, res) => {
   // adds new ticket
   const version = req.body.version;
+  console.log(version);
   if (version === NossaVersion) {
     Ticket.findOne({ ticketId: req.body.ticketId }, { lean: true }).exec(
       (err, doc) => {
         if (err) {
-          res.send(err);
+          res.status(403).send(err);
         } else if (doc) {
           // if there is a match, update doc with new update
           const filter = {
