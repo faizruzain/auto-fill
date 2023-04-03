@@ -71,7 +71,7 @@ app.get("/list", async (req, res) => {
   }
 });
 
-app.put("/list", cors(corsOptions), (req, res) => {
+app.put("/list", cors(corsOptions), async (req, res) => {
   const version = req.body.version;
   const query = req.body.ticketId;
   if (version === NossaVersion) {
@@ -86,18 +86,19 @@ app.put("/list", cors(corsOptions), (req, res) => {
       dateClosed: req.body.dateClosed,
     };
 
-    const doc = Ticket.findOneAndUpdate(filter, update, {
-      new: true,
-      upsert: true,
-    })
-      .lean()
-      .exec();
-
-    doc.then((doc) => {
+    try {
+      const doc = await Ticket.findOneAndUpdate(filter, update, {
+        new: true,
+        upsert: true,
+      })
+        .lean()
+        .exec();
       if (doc) {
         res.status(200).send(doc);
       }
-    });
+    } catch (error) {
+      res.status(403).send(error);
+    }
   } else {
     res.status(403).send({ message: "need update!" });
   }
@@ -107,7 +108,6 @@ app.put("/list", cors(corsOptions), (req, res) => {
 app.post("/addlist", (req, res) => {
   // adds new ticket
   const version = req.body.version;
-  console.log(version);
   if (version === NossaVersion) {
     Ticket.findOne({ ticketId: req.body.ticketId }, { lean: true }).exec(
       (err, doc) => {
@@ -155,10 +155,10 @@ app.post("/addlist", (req, res) => {
 
           data.validate((err) => {
             if (err) {
-              res.send(err.errors);
+              res.status(403).send(err.errors);
             } else {
               data.save();
-              res.send({ message: "success" });
+              res.status(200).send({ message: "success" });
             }
           });
         }
@@ -173,4 +173,6 @@ app.get("*", (req, res) => {
   res.status(200).send("<h1>Path not found</h1>");
 });
 
-app.listen(port);
+app.listen(port, () => {
+  console.log(`server is running on port ${port}`);
+});
