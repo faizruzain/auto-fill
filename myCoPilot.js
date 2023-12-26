@@ -4,7 +4,7 @@ require("dotenv").config();
 // dotenv.config()
 // ======================================= dotenv for security =======================================
 
-const InseraVersion = "4.1";
+const InseraVersion = "1.0";
 
 // =================================== express server configuration ===================================
 const express = require("express");
@@ -35,8 +35,8 @@ const Ticket = require("./schemas/ticket.js");
 const mongoose = require("mongoose");
 // const { query } = require("express");
 mongoose.set("strictQuery", false);
-const db = "mongodb://127.0.0.1:27017/test";
-// const db = process.env.DB;
+// const db = "mongodb://127.0.0.1:27017/test";
+const db = process.env.DB;
 
 main();
 
