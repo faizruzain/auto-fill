@@ -27,12 +27,6 @@ const ticketSchema = new mongoose.Schema({
   siteId: String,
   impact: {
     type: [String],
-    // validate: {
-    //   validator: ((impact => {
-    //     return impact.length > 0
-    //   })),
-    //   message: 'cannot be empty'
-    // }
   },
   datek: {
     type: [String]
@@ -40,7 +34,8 @@ const ticketSchema = new mongoose.Schema({
   actualSolution: String,
   incidentDomain: String,
   RFO_details: String,
-  dateClosed: String
+  dateClosed: String,
+  ttr_customer: String
 }, {
   collection: 'tickets'
 })

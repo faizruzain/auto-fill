@@ -4,7 +4,7 @@ require("dotenv").config();
 // dotenv.config()
 // ======================================= dotenv for security =======================================
 
-const NossaVersion = "4.1";
+const InseraVersion = "4.1";
 
 // =================================== express server configuration ===================================
 const express = require("express");
@@ -35,13 +35,20 @@ const Ticket = require("./schemas/ticket.js");
 const mongoose = require("mongoose");
 // const { query } = require("express");
 mongoose.set("strictQuery", false);
-// const db = "mongodb://127.0.0.1:27017/test";
-const db = process.env.DB;
-main().catch((err) => console.log(err));
+const db = "mongodb://127.0.0.1:27017/test";
+// const db = process.env.DB;
+
+main();
 
 async function main() {
-  await mongoose.connect(db);
+  try {
+    await mongoose.connect(db);
+  } catch(err) {
+    console.log(err);
+  }
 }
+
+
 // ======================================== db configuration ========================================
 
 // home route
@@ -71,19 +78,22 @@ app.get("/list", async (req, res) => {
   }
 });
 
+// update ticket
 app.put("/list", cors(corsOptions), async (req, res) => {
   const version = req.body.version;
   const query = req.body.ticketId;
-  if (version === NossaVersion) {
+  if (version === InseraVersion) {
     const filter = {
       ticketId: query,
     };
 
     const update = {
+      ticketHL: req.body.ticketHL,
       actualSolution: req.body.actualSolution,
       incidentDomain: req.body.incidentDomain,
       RFO_details: req.body.RFO_details,
       dateClosed: req.body.dateClosed,
+      ttr_customer: req.body.ttr_customer,
     };
 
     try {
@@ -105,12 +115,12 @@ app.put("/list", cors(corsOptions), async (req, res) => {
 });
 
 // input new ticket
-app.post("/addlist", (req, res) => {
+app.post("/addlist", async (req, res) => {
   // adds new ticket
   const version = req.body.version;
-  if (version === NossaVersion) {
-    Ticket.findOne({ ticketId: req.body.ticketId }, { lean: true }).exec(
-      (err, doc) => {
+  if (version === InseraVersion) {
+    Ticket.findOne({ ticketId: req.body.ticketId }, { lean: true }).then(
+      async (err, doc) => {
         if (err) {
           res.status(403).send(err);
         } else if (doc) {
@@ -151,16 +161,12 @@ app.post("/addlist", (req, res) => {
             datek: req.body.datek,
           });
 
-          data.set("validateBeforeSave", false);
-
-          data.validate((err) => {
-            if (err) {
-              res.status(403).send(err.errors);
-            } else {
-              data.save();
-              res.status(200).send({ message: "success" });
-            }
-          });
+          try {
+            await data.save();
+            res.status(200).send({ message: "success" });
+          } catch (error) {
+            res.status(403).send(error.errors);
+          }
         }
       }
     );
