@@ -35,25 +35,24 @@ const Ticket = require("./schemas/ticket.js");
 const mongoose = require("mongoose");
 // const { query } = require("express");
 mongoose.set("strictQuery", false);
-// const db = "mongodb://127.0.0.1:27017/test";
-const db = process.env.DB;
+const db = "mongodb://127.0.0.1:27017/test";
+// const db = process.env.DB;
 
 main();
 
 async function main() {
   try {
     await mongoose.connect(db);
-  } catch(err) {
+  } catch (err) {
     console.log(err);
   }
 }
-
 
 // ======================================== db configuration ========================================
 
 // home route
 app.get("/", (req, res) => {
-  res.send({ message: `hello ${req.ip}` });
+  res.send({ message: `hello ${req.socket.remoteAddress}` });
 });
 
 // to do queries
@@ -100,9 +99,7 @@ app.put("/list", cors(corsOptions), async (req, res) => {
       const doc = await Ticket.findOneAndUpdate(filter, update, {
         new: true,
         upsert: true,
-      })
-        .lean()
-        .exec();
+      }).lean().exec();
       if (doc) {
         res.status(200).send(doc);
       }
@@ -118,58 +115,62 @@ app.put("/list", cors(corsOptions), async (req, res) => {
 app.post("/addlist", async (req, res) => {
   // adds new ticket
   const version = req.body.version;
+  const ticketId = req.body.ticketId;
   if (version === InseraVersion) {
-    Ticket.findOne({ ticketId: req.body.ticketId }, { lean: true }).then(
-      async (err, doc) => {
-        if (err) {
+    try {
+      const doc = await Ticket.findOne({ ticketId: ticketId }).lean().exec();
+      if (!doc) {
+        // if there is no match, create one
+        const data = new Ticket({
+          ticketId: req.body.ticketId,
+          ticketHL: req.body.ticketHL,
+          dateOpen: req.body.dateOpen,
+          remedy: req.body.remedy,
+          impact: req.body.impact,
+          datek: req.body.datek,
+        });
+
+        try {
+          await data.save();
+          res.status(200).send({ message: "success" });
+        } catch (error) {
+          res.status(403).send(error.errors);
+        }
+      } else if (doc) {
+        // if there is a match, update doc with new update
+        const filter = {
+          ticketId: req.body.ticketId,
+        };
+
+        const update = {
+          ticketId: req.body.ticketId,
+          ticketHL: req.body.ticketHL,
+          dateOpen: req.body.dateOpen,
+          remedy: req.body.remedy,
+          impact: req.body.impact,
+          datek: req.body.datek,
+        };
+
+        const options = {
+          returnDocument: "after",
+          lean: true,
+        };
+
+        try {
+          const doc = await Ticket.findOneAndUpdate(
+            filter,
+            update,
+            options
+          ).lean().exec();
+          res.status(200).send({ message: `updated this ${doc.ticketId}` });
+        } catch (err) {
           res.status(403).send(err);
-        } else if (doc) {
-          // if there is a match, update doc with new update
-          const filter = {
-            ticketId: req.body.ticketId,
-          };
-
-          const update = {
-            ticketId: req.body.ticketId,
-            ticketHL: req.body.ticketHL,
-            dateOpen: req.body.dateOpen,
-            remedy: req.body.remedy,
-            impact: req.body.impact,
-            datek: req.body.datek,
-          };
-
-          const options = {
-            returnDocument: "after",
-            lean: true,
-          };
-
-          Ticket.findOneAndUpdate(filter, update, options, (error, doc) => {
-            if (error) {
-              res.send(err);
-            } else {
-              res.send({ message: `updated this ${doc.ticketId}` });
-            }
-          });
-        } else {
-          // if there is no match, create one
-          const data = new Ticket({
-            ticketId: req.body.ticketId,
-            ticketHL: req.body.ticketHL,
-            dateOpen: req.body.dateOpen,
-            remedy: req.body.remedy,
-            impact: req.body.impact,
-            datek: req.body.datek,
-          });
-
-          try {
-            await data.save();
-            res.status(200).send({ message: "success" });
-          } catch (error) {
-            res.status(403).send(error.errors);
-          }
         }
       }
-    );
+    } catch (err) {
+      console.log(err);
+      res.status(403).send(err);
+    }
   } else {
     res.status(403).send({ message: "need update!" });
   }
