@@ -22,7 +22,6 @@ const ticketSchema = new mongoose.Schema({
   },
   remedy: {
     type: String,
-    required: true
   },
   siteId: String,
   impact: {
