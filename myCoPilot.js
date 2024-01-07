@@ -35,8 +35,8 @@ const Ticket = require("./schemas/ticket.js");
 const mongoose = require("mongoose");
 // const { query } = require("express");
 mongoose.set("strictQuery", false);
-// const db = "mongodb://127.0.0.1:27017/test";
-const db = process.env.DB;
+const local = "mongodb://127.0.0.1:27017/test";
+const db = process.env.DB || local;
 
 main();
 
@@ -81,6 +81,7 @@ app.get("/list", async (req, res) => {
 app.put("/list", cors(corsOptions), async (req, res) => {
   const version = req.body.version;
   const query = req.body.ticketId;
+
   if (version === InseraVersion) {
     const filter = {
       ticketId: query,
