@@ -35,8 +35,8 @@ const Ticket = require("./schemas/ticket.js");
 const mongoose = require("mongoose");
 // const { query } = require("express");
 mongoose.set("strictQuery", false);
-const local = "mongodb://127.0.0.1:27017/test";
-const db = process.env.DB || local;
+// const db = "mongodb://127.0.0.1:27017/test";
+const db = process.env.DB;
 
 main();
 
