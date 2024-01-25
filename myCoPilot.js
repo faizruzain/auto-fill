@@ -16,6 +16,7 @@ const homeRoute = require("./routes/home.js");
 const listRoute = require("./routes/list.js");
 const addlistRoute = require("./routes/addlist.js");
 const updateworklogsRoute = require("./routes/update-worklogs.js");
+const sendMeImg = require("./routes/send-me-img.js");
 
 // to catch incoming POST data
 app.use(express.json());
@@ -28,6 +29,7 @@ app.use("/", homeRoute);
 app.use("/list", listRoute);
 app.use("/addlist", addlistRoute);
 app.use("/update-worklogs", updateworklogsRoute);
+app.use("/send-me-img", sendMeImg);
 // =================================== express server configuration ===================================
 
 // ======================================== db configuration ==========================================
