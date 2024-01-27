@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
+const cors = require("cors");
 const bot = require("../telegram-bot/bot");
 const multer = require("multer");
 const storage = multer.memoryStorage();
@@ -18,7 +19,7 @@ router
       res.status(400).send({ message: error });
     }
   })
-  .post(upload.single("evidence"), async (req, res) => {
+  .post(upload.single("evidence"), cors(), async (req, res) => {
     const buffer = req.file.buffer;
     try {
       // await bot.sendMessage(chatId, ticketId);
