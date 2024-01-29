@@ -5,7 +5,6 @@ const token = process.env.TELEGRAM_BOT_TOKEN_LOCAL ? process.env.TELEGRAM_BOT_TO
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 const chatId = process.env.FAIZRUZAIN ? process.env.FAIZRUZAIN : process.env.EOS_CSO_TELEGRAM_CHAT_ID;
-console.log(chatId);
 
 bot.onText(/\/sendhere/, async (msg, match) => {
   bot.sendMessage(chatId, "OK");
