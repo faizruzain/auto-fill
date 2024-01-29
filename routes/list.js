@@ -25,9 +25,9 @@ router
 
         if (!doc) {
           res.status(200).send({ message: "no data found" });
-        } else {
-          res.status(200).send(doc);
+        } else if(doc) {
           await Ticket.deleteMany({ ticketId: query });
+          res.status(200).send(doc);
         }
       } catch (error) {
         res.status(403).send(error);
