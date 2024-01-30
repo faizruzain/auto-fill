@@ -14,4 +14,8 @@ bot.onText(/\/chatid/, (msg, match) => {
   bot.sendMessage(chatId, chatId);
 });
 
+bot.on("polling_error", (error) => {
+  console.log(error);
+});
+
 module.exports = bot;
