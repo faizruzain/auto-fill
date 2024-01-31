@@ -22,7 +22,6 @@ router
     }
   })
   .post(upload.any(), cors(), async (req, res) => {
-    console.log(req.body);
     const header = req.body.header;
     const details = req.body.details;
     const files = req.files;
@@ -33,55 +32,53 @@ router
         const media = new Object();
         media.type = "photo";
         media.media = files[i].buffer;
-        //media.caption = header;
+        media.caption = `<code>${header}\n\n${details}</code>`;
+        media.parse_mode = "HTML";
         mediaGroup.push(media);
       }
       resolve(mediaGroup);
       reject("error");
     });
 
-    if (files.length === 0) {
-      res.status(200).send({ message: "No images" });
-    } else if (files.length === 1) {
-      try {
-        await bot.sendPhoto(chatId, files[0].buffer, {
-          caption: header + "\n" + "\n" + details
-        });
-        res.status(200).send({ message: "got your data :)" });
-      } catch (err) {
-        console.log(err);
-        res.status(400).send({ message: "something's not right :(" });
-      }
-    } else if (files.length > 1) {
-      populateMediaGroup.then(async (val, err) => {
-        if (val) {
-          try {
-            console.log(val);
-            await bot.sendMediaGroup(chatId, mediaGroup, {
-              caption: header + "\n" + "\n" + details
-            });
-            res.status(200).send({ message: "got your data :)" });
-          } catch (error) {
-            console.log(error);
+    switch (true) {
+      case files.length > 1:
+        populateMediaGroup.then(async (val, err) => {
+          if (val) {
+            try {
+              await bot.sendMediaGroup(chatId, mediaGroup);
+              res.status(200).send({ message: "got your data :)" });
+            } catch (error) {
+              console.log(error);
+              res.status(400).send({ message: "something's not right :(" });
+            }
+          } else if (err) {
+            console.log(err);
             res.status(400).send({ message: "something's not right :(" });
           }
-        } else if (err) {
+        });
+        break;
+
+      case files.length == 1:
+        try {
+          await bot.sendPhoto(chatId, files[0].buffer, {
+            caption: `<code>${header}\n\n${details}</code>`,
+            parse_mode: "HTML"
+          });
+          res.status(200).send({ message: "got your data :)" });
+        } catch (err) {
           console.log(err);
           res.status(400).send({ message: "something's not right :(" });
         }
-      });
+        break;
+
+      case files.length == 0:
+        res.status(200).send({ message: "No images" });
+        break;
+
+      default:
+        res.status(200).send({ message: "No case is matched!" });
+        break;
     }
   });
-// .post(upload.single("evidence"), cors(), async (req, res) => {
-//   const buffer = req.file.buffer;
-//   try {
-//     await bot.sendPhoto(chatId, buffer);
-//     res.status(200).send({ message: "Got your data" });
-//   } catch (error) {
-//     console.log(error);
-//     await bot.sendMessage(chatId, error);
-//     res.status(400).send({ message: "???" });
-//   }
-// });
 
 module.exports = router;
