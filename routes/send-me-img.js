@@ -24,6 +24,7 @@ router
   .post(upload.any(), cors(), async (req, res) => {
     const header = req.body.header;
     const details = req.body.details;
+    const captions = `${header}\n\n${details}`;
     const files = req.files;
     var mediaGroup = [];
 
@@ -32,7 +33,7 @@ router
         const media = new Object();
         media.type = "photo";
         media.media = files[i].buffer;
-        media.caption = `<code>${header}\n\n${details}</code>`;
+        media.caption = `<code>${captions}</code>`;
         media.parse_mode = "HTML";
         mediaGroup.push(media);
       }
@@ -46,6 +47,9 @@ router
           if (val) {
             try {
               await bot.sendMediaGroup(chatId, mediaGroup);
+              await bot.sendMessage(chatId, `<code>${captions}</code>`, {
+                parse_mode: "HTML"
+              });
               res.status(200).send({ message: "got your data :)" });
             } catch (error) {
               console.log(error);
@@ -61,7 +65,7 @@ router
       case files.length == 1:
         try {
           await bot.sendPhoto(chatId, files[0].buffer, {
-            caption: `<code>${header}\n\n${details}</code>`,
+            caption: `<code>${captions}</code>`,
             parse_mode: "HTML"
           });
           res.status(200).send({ message: "got your data :)" });
