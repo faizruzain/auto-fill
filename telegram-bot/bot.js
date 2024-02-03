@@ -14,6 +14,15 @@ bot.onText(/\/chatid/, (msg, match) => {
   bot.sendMessage(chatId, chatId);
 });
 
+// bot.on("message", (msg) => {
+//   console.log(msg);
+//   const photos = msg.photo;
+//   console.log("number of photos: "+photos.length+"\n");
+//   for(var i = 0; i < photos.length; i++){
+//     console.log(photos[i].file_unique_id);
+//   }
+// });
+
 // bot.on("polling_error", (error) => {
 //   console.log(error);
 // });

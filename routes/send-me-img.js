@@ -33,8 +33,8 @@ router
         const media = new Object();
         media.type = "photo";
         media.media = files[i].buffer;
-        media.caption = `<code>${captions}</code>`;
-        media.parse_mode = "HTML";
+        // media.caption = `<code>${captions}</code>`;
+        // media.parse_mode = "HTML";
         mediaGroup.push(media);
       }
       resolve(mediaGroup);
@@ -48,7 +48,7 @@ router
             try {
               await bot.sendMediaGroup(chatId, mediaGroup);
               await bot.sendMessage(chatId, `<code>${captions}</code>`, {
-                parse_mode: "HTML"
+                parse_mode: "HTML",
               });
               res.status(200).send({ message: "got your data :)" });
             } catch (error) {
@@ -64,9 +64,9 @@ router
 
       case files.length == 1:
         try {
-          await bot.sendPhoto(chatId, files[0].buffer, {
-            caption: `<code>${captions}</code>`,
-            parse_mode: "HTML"
+          await bot.sendPhoto(chatId, files[0].buffer);
+          await bot.sendMessage(chatId, `<code>${captions}</code>`, {
+            parse_mode: "HTML",
           });
           res.status(200).send({ message: "got your data :)" });
         } catch (err) {
