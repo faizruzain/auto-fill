@@ -17,6 +17,7 @@ const listRoute = require("./routes/list.js");
 const addlistRoute = require("./routes/addlist.js");
 const updateworklogsRoute = require("./routes/update-worklogs.js");
 const sendMeImg = require("./routes/send-me-img.js");
+const radioDatek = require("./routes/radio-datek.js");
 
 // to catch incoming POST data
 app.use(express.json());
@@ -30,12 +31,13 @@ app.use("/list", listRoute);
 app.use("/addlist", addlistRoute);
 app.use("/update-worklogs", updateworklogsRoute);
 app.use("/send-me-img", sendMeImg);
+app.use("/radio-datek", radioDatek);
 // =================================== express server configuration ===================================
 
 // ======================================== db configuration ==========================================
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
-const local = "mongodb://127.0.0.1:27017/test";
+const local = "mongodb://127.0.0.1:27017/auto-fill-local";
 const db = process.env.DB || local;
 
 main();
