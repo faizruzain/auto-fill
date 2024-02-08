@@ -1,10 +1,6 @@
 // ======================================= dotenv for security =======================================
 require("dotenv").config();
-// import dotenv from 'dotenv'
-// dotenv.config()
 // ======================================= dotenv for security =======================================
-
-// const InseraVersion = "1.0";
 
 // =================================== express server configuration ===================================
 const express = require("express");
@@ -19,6 +15,16 @@ const updateworklogsRoute = require("./routes/update-worklogs.js");
 const sendMeImg = require("./routes/send-me-img.js");
 const radioDatek = require("./routes/radio-datek.js");
 
+app.use(
+  require("express-status-monitor")({
+    spans: [
+      {
+        interval: 1,
+        retention: 60,
+      },
+    ],
+  })
+);
 // to catch incoming POST data
 app.use(express.json());
 app.use(
