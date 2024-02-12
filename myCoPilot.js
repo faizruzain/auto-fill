@@ -6,6 +6,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
+const path = require("path");
 
 // routes
 const homeRoute = require("./routes/home.js");
@@ -32,12 +33,13 @@ app.use(
     extended: true,
   })
 );
-app.use("/", homeRoute);
+app.use("/", express.static(path.join(__dirname, "public")), homeRoute);
 app.use("/list", listRoute);
 app.use("/addlist", addlistRoute);
 app.use("/update-worklogs", updateworklogsRoute);
 app.use("/send-me-img", sendMeImg);
 app.use("/radio-datek", radioDatek);
+// app.use(express.static(path.join(__dirname, "public")));
 // =================================== express server configuration ===================================
 
 // ======================================== db configuration ==========================================
